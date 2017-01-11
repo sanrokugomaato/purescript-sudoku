@@ -10,10 +10,13 @@ import Partial.Unsafe (unsafePartial)
 
 data Cell = Cell Int (Maybe Int)
 
-row :: Cell -> Int
+type Row = Int
+type Col = Int
+
+row :: Cell -> Row
 row (Cell i _) = i `div` 9
 
-col :: Cell -> Int
+col :: Cell -> Col
 col (Cell i _) = i `mod` 9
 
 value :: Cell -> Maybe Int
@@ -31,13 +34,13 @@ instance showBoard :: Show Board where
 emptyBoard :: Board
 emptyBoard = Board $ map (\i -> Cell i Nothing) (range 0 80)
 
-rowAt :: Int -> Board -> Array Cell
+rowAt :: Row -> Board -> Array Cell
 rowAt i (Board arr) = filter (row >>> eq i) arr
 
-colAt :: Int -> Board -> Array Cell
+colAt :: Col -> Board -> Array Cell
 colAt i (Board arr) = filter (col >>> eq i) arr
 
-sectionAt :: Int -> Int -> Board -> Array Cell
+sectionAt :: Row -> Col -> Board -> Array Cell
 sectionAt secRow secCol (Board arr) = filter f arr
   where
     f cell =
@@ -47,7 +50,7 @@ sectionAt secRow secCol (Board arr) = filter f arr
        r >= secRow * 3 && r < (secRow + 1) * 3 &&
        c >= secCol * 3 && c < (secCol + 1) * 3
 
-valueAt :: Int -> Int -> Board -> Maybe Int
+valueAt :: Row -> Col -> Board -> Maybe Int
 valueAt row col (Board arr) = arr !! (row * 9 + col) >>= value
 
 choose :: Array Int -> Eff (random :: RANDOM) Int
@@ -56,7 +59,7 @@ choose xs = do
   idx <- randomInt 0 (length xs - 1)
   pure $ unsafePartial fromJust $ xs !! idx
 
-availableValues :: Int -> Int -> Board -> Array Int
+availableValues :: Row -> Col -> Board -> Array Int
 availableValues row col board = range 1 9 \\ already
   where
     already = map (unsafePartial fromJust <<< value)
@@ -64,7 +67,7 @@ availableValues row col board = range 1 9 \\ already
             $ rowAt row board <> colAt col board <>
               sectionAt (row `div` 3) (col `div` 3) board
 
-replaceValue :: Board -> Int -> Int -> Int -> Board
+replaceValue :: Board -> Row -> Col -> Int -> Board
 replaceValue (Board arr) row col val =
   Board $ unsafePartial fromJust $ updateAt idx (Cell idx $ Just val) arr
   where idx = row * 9 + col
