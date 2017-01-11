@@ -1,7 +1,7 @@
 module Sudoku.Board where
 
 import Prelude
-import Data.Array (snoc, filter)
+import Data.Array (filter, foldMap, range, snoc)
 
 newtype Cell a = Cell { row :: Int, col :: Int, val :: a }
 
@@ -14,7 +14,13 @@ row (Cell x) = x.row
 col :: forall a. Cell a -> Int
 col (Cell x) = x.col
 
+instance showCell :: (Show a) => Show (Cell a) where
+  show (Cell cell) = show cell.val
+
 newtype Board a = Board (Array (Cell a))
+
+instance showBoard :: (Show a) => Show (Board a) where
+  show board = foldMap (nthRow board >>> foldMap show >>> (<>) "\n") (range 0 8)
 
 createBoard :: forall a. (Board a -> a) -> Board a
 createBoard f = go f 0 0 []
