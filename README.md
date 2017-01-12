@@ -28,30 +28,42 @@ pulp run --include examples --main Example.Simple
 ```
 Minimum difficulty level: 45
 
-Difficulty level: 50
-Game board
+Difficulty: 49
 
-51xx3xxxx
-26xxxx358
-78xxxxx9x
-xxxx2xx67
-xx2xx15xx
-9xxxxx182
-6xxxxxx3x
-x28xx967x
-xx76x4xxx
+Board:
+67x218xxx
+5xxxx3xx2
+x2x754xxx
+xx28x9xx5
+xxxxxxxx7
+48xx2x391
+xx1x3x7xx
+xxxx856x4
+2x6xxxxxx
+
+Answer:
+679218543
+514963872
+328754916
+132879465
+965341287
+487526391
+841632759
+793185624
+256497138
 
 Solution:
-[
-519438726
-264197358
-783256491
-145823967
-872961543
-936745182
-691572834
-428319675
-357684219]
+679218543
+514963872
+328754916
+132879465
+965341287
+487526391
+841632759
+793185624
+256497138
+
+Result: ok!
 ```
 
 ## License
