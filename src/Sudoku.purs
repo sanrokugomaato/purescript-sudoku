@@ -1,4 +1,4 @@
-module Sudoku.Board where
+module Sudoku where
 
 import Prelude
 import Control.Monad.Eff (Eff)
