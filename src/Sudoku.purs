@@ -6,6 +6,7 @@ import Control.Monad.Eff.Random (RANDOM, randomInt)
 import Data.Array (filter, foldMap, foldRecM, length, range, snoc, updateAt, (!!), (\\))
 import Data.Array.Partial (head)
 import Data.Maybe (Maybe(..), fromJust, isJust)
+import Data.Tuple (Tuple(..))
 import Partial.Unsafe (unsafePartial)
 
 data Cell = Cell Int (Maybe Int)
@@ -97,10 +98,30 @@ fullBoard = unsafePartial fromJust <$> go 0 0 [] emptyBoard
             Nothing -> go row col (snoc alreadyTried curVal) board
             justBoard -> pure justBoard
 
-defaultBoard :: Eff (random :: RANDOM) Board
-defaultBoard = do
-  board <- fullBoard
-  -- FIXME: only until the answer remains unique
-  foldRecM (\board _ -> emptyRandomCell board)
-           board
-           (range 1 (81 - 17))
+solve :: Board -> Array Board
+solve board = go 0 0 board
+  where
+    go :: Row -> Col -> Board -> Array Board
+    go row 9 board = go (row + 1) 0 board
+    go 9 _ board = [board]
+    go row col board =
+      case valueAt row col board of
+        Just _ -> go row (col + 1) board
+        Nothing -> flip foldMap (availableValues row col board) \val ->
+          go row (col + 1) $ replaceValue row col (Just val) board
+
+minDifficulty :: Int
+minDifficulty = 45
+
+generateGame :: Eff (random :: RANDOM) (Tuple Int Board)
+generateGame = fullBoard >>= go 0
+  where
+  go :: Int -> Board -> Eff (random :: RANDOM) (Tuple Int Board)
+  go difficulty old = do
+    new <- emptyRandomCell old
+    case length $ solve new of
+      0 -> go difficulty old -- try empty again
+      1 -> go (difficulty + 1) new -- try more
+      _ -> if difficulty > minDifficulty
+           then pure $ Tuple difficulty old -- return the game
+           else generateGame -- try from scratch! :sad:

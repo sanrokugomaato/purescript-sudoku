@@ -12,7 +12,8 @@
     "purescript-eff": "^2.0.0",
     "purescript-random": "^2.0.0",
     "purescript-partial": "^1.2.0",
-    "purescript-maybe": "^2.0.1"
+    "purescript-maybe": "^2.0.1",
+    "purescript-tuples": "^3.1.0"
   },
   "devDependencies": {
     "purescript-psci-support": "^2.0.0"
