@@ -112,15 +112,15 @@ solve board = go 0 0 board
 
 type Difficulty = Int
 
-generateGame :: Difficulty -> Eff (random :: RANDOM) (Tuple Int Board)
-generateGame minDifficulty = fullBoard >>= go 0
+generateGame :: Difficulty -> Eff (random :: RANDOM) (Tuple Difficulty Board)
+generateGame minDify = fullBoard >>= go 0
   where
-  go :: Int -> Board -> Eff (random :: RANDOM) (Tuple Int Board)
-  go difficulty old = do
+  go :: Difficulty -> Board -> Eff (random :: RANDOM) (Tuple Difficulty Board)
+  go dify old = do
     new <- emptyRandomCell old
     case length $ solve new of
-      0 -> go difficulty old -- try empty again
-      1 -> go (difficulty + 1) new -- try more
-      _ -> if difficulty > minDifficulty
-           then pure $ Tuple difficulty old -- return the game
-           else generateGame minDifficulty -- try from scratch! :sad:
+      0 -> go dify old -- try empty again
+      1 -> go (dify + 1) new -- try more
+      _ -> if dify > minDify
+           then pure $ Tuple dify old -- return the game
+           else generateGame minDify -- try from scratch! :sad:
