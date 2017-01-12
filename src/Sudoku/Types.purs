@@ -5,6 +5,8 @@ import Data.Array (fold, mapWithIndex)
 import Data.Maybe (Maybe(..))
 
 data Cell a = Cell Int a
+
+derive instance eqCellInt :: Eq (Cell Int)
 derive instance functorCell :: Functor Cell
 
 instance showCellMaybeInt :: Show (Cell (Maybe Int)) where
@@ -15,13 +17,16 @@ instance showCellInt :: Show (Cell Int) where
   show (Cell _ x) = show x
 
 newtype Row = Row Int
+
 derive instance rowEq :: Eq Row
 
 newtype Col = Col Int
+
 derive instance colEq :: Eq Col
 
 newtype Board a = Board (Array (Cell a))
 
+derive instance eqBoardInt :: Eq (Board Int)
 derive instance functorBoard :: Functor Board
 
 instance showBoard :: (Show (Cell a)) => Show (Board a) where
