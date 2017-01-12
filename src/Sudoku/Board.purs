@@ -67,22 +67,40 @@ availableValues row col board = range 1 9 \\ already
             $ rowAt row board <> colAt col board <>
               sectionAt (row `div` 3) (col `div` 3) board
 
-replaceValue :: Board -> Row -> Col -> Int -> Board
-replaceValue (Board arr) row col val =
-  Board $ unsafePartial fromJust $ updateAt idx (Cell idx $ Just val) arr
+replaceValue :: Row -> Col -> Maybe Int -> Board -> Board
+replaceValue row col val (Board arr) =
+  Board $ unsafePartial fromJust $ updateAt idx (Cell idx val) arr
   where idx = row * 9 + col
 
-insertRandomCell :: Board -> Eff (random :: RANDOM) Board
-insertRandomCell board = do
+emptyRandomCell :: Board -> Eff (random :: RANDOM) Board
+emptyRandomCell board = do
   row <- randomInt 0 8
   col <- randomInt 0 8
   case valueAt row col board of
-    Just _ -> insertRandomCell board -- try again
-    Nothing -> do
-      val <- choose $ availableValues row col board
-      pure $ replaceValue board row col val
+    Nothing -> emptyRandomCell board -- try again, not smart but works
+    Just _ -> pure $ replaceValue row col Nothing board
+
+fullBoard :: Eff (random :: RANDOM) Board
+fullBoard = unsafePartial fromJust <$> go 0 0 [] emptyBoard
+  where
+    go :: Row -> Col -> Array Int -> Board -> Eff (random :: RANDOM) (Maybe Board)
+    go row 9 _ board = go (row + 1) 0 [] board
+    go 9 _ _ board = pure $ Just board
+    go row col alreadyTried board =
+      case availableValues row col board \\ alreadyTried of
+        [] -> pure Nothing
+        xs -> do
+          curVal <- choose xs
+          let curBoard = replaceValue row col (Just curVal) board
+          nextBoard <- go row (col + 1) [] curBoard
+          case nextBoard of
+            Nothing -> go row col (snoc alreadyTried curVal) board
+            justBoard -> pure justBoard
 
 defaultBoard :: Eff (random :: RANDOM) Board
-defaultBoard = foldRecM (\board _ -> insertRandomCell board)
-                        emptyBoard
-                        (range 1 17)
+defaultBoard = do
+  board <- fullBoard
+  -- FIXME: only until the answer remains unique
+  foldRecM (\board _ -> emptyRandomCell board)
+           board
+           (range 1 (81 - 17))
