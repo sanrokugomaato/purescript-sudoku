@@ -4,20 +4,9 @@ import Prelude
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Random (RANDOM, randomInt)
 import Data.Array (filter, foldMap, length, range, snoc, updateAt, (!!), (\\))
-import Data.Maybe (Maybe(..), fromJust, isJust)
-import Partial.Unsafe (unsafePartial)
-
-fromJust' :: forall a. Maybe a -> a
-fromJust' = unsafePartial fromJust
-
-data Cell a = Cell Int a
-
-derive instance functorCell :: Functor Cell
-
-newtype Row = Row Int
-newtype Col = Col Int
-derive instance rowEq :: Eq Row
-derive instance colEq :: Eq Col
+import Data.Maybe (Maybe(..), isJust)
+import Sudoku.Types (Cell(..), Row(..), Col(..), Board(..), Section(..), Difficulty, Game(..))
+import Sudoku.Util (fromJust', choose)
 
 rowOf :: forall a. Cell a -> Row
 rowOf (Cell i _) = Row $ i `div` 9
@@ -28,20 +17,6 @@ colOf (Cell i _) = Col $ i `mod` 9
 valueOf :: forall a. Cell a -> a
 valueOf (Cell _ x) = x
 
-instance showCellMaybeInt :: Show (Cell (Maybe Int)) where
-  show (Cell _ (Just x)) = show x
-  show (Cell _ Nothing) = "x"
-
-instance showCellInt :: Show (Cell Int) where
-  show (Cell _ x) = show x
-
-newtype Board a = Board (Array (Cell a))
-
-derive instance functorBoard :: Functor Board
-
-instance showBoard :: (Show (Cell a)) => Show (Board a) where
-  show board = foldMap (Row >>> flip rowCells board >>> foldMap show >>> (<>) "\n") (range 0 8)
-
 emptyBoard :: Board (Maybe Int)
 emptyBoard = Board $ map (\i -> Cell i Nothing) (range 0 80)
 
@@ -51,10 +26,8 @@ rowCells i (Board arr) = filter (rowOf >>> eq i) arr
 colCells :: forall a. Col -> Board a -> Array (Cell a)
 colCells i (Board arr) = filter (colOf >>> eq i) arr
 
-data Section = Section Int Int -- Section 0 0 ~ Section 2 2
-
-sectionOf :: Row -> Col -> Section
-sectionOf (Row r) (Col c) = Section (r `div` 3) (c `div` 3)
+sectionAt :: Row -> Col -> Section
+sectionAt (Row r) (Col c) = Section (r `div` 3) (c `div` 3)
 
 contains :: forall a. Section -> Cell a -> Boolean
 contains (Section secRow secCol) cell =
@@ -68,17 +41,11 @@ contains (Section secRow secCol) cell =
 sectionCells :: forall a. Section -> Board a -> Array (Cell a)
 sectionCells sec (Board arr) = filter (contains sec) arr
 
-rawIdx :: Row -> Col -> Int
-rawIdx (Row r) (Col c) = r * 9 + c
+idxAt :: Row -> Col -> Int
+idxAt (Row r) (Col c) = r * 9 + c
 
 valueAt :: forall a. Row -> Col -> Board a -> a
-valueAt row col (Board arr) = valueOf $ fromJust' (arr !! rawIdx row col)
-
-choose :: forall e. Array Int -> Eff (random :: RANDOM | e) Int
-choose [x] = pure x
-choose xs = do
-  idx <- randomInt 0 (length xs - 1)
-  pure $ fromJust' $ xs !! idx
+valueAt row col (Board arr) = valueOf $ fromJust' (arr !! idxAt row col)
 
 availableValues :: Row -> Col -> Board (Maybe Int) -> Array Int
 availableValues row col board = range 1 9 \\ already
@@ -86,12 +53,12 @@ availableValues row col board = range 1 9 \\ already
     already = map (fromJust' <<< valueOf)
             $ filter (isJust <<< valueOf)
             $ rowCells row board <> colCells col board <>
-              sectionCells (sectionOf row col) board
+              sectionCells (sectionAt row col) board
 
 replaceValue :: forall a. Row -> Col -> a -> Board a -> Board a
 replaceValue row col val (Board arr) =
   Board $ fromJust' $ updateAt idx (Cell idx val) arr
-  where idx = rawIdx row col
+  where idx = idxAt row col
 
 emptyRandomCell :: forall e. Board (Maybe Int) -> Eff (random :: RANDOM | e) (Board (Maybe Int))
 emptyRandomCell board = do
@@ -129,16 +96,6 @@ solve = go (Row 0) (Col 0)
         Just _ -> go row (Col $ c + 1) board
         Nothing -> flip foldMap (availableValues row col board) \val ->
           go row (Col $ c + 1) $ replaceValue row col (Just val) board
-
-type Difficulty = Int
-
-data Game = Game Difficulty (Board (Maybe Int)) (Board Int)
-
-instance showGame :: Show Game where
-  show (Game dify ques answ) =
-    "Difficulty: " <> show dify <> "\n\n" <>
-    "Board:" <> show ques <> "\n\n" <>
-    "Answer:" <> show answ
 
 generateGame :: forall e. Difficulty -> Eff (random :: RANDOM | e) Game
 generateGame minDify = do
