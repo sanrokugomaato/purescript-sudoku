@@ -110,11 +110,10 @@ solve board = go 0 0 board
         Nothing -> flip foldMap (availableValues row col board) \val ->
           go row (col + 1) $ replaceValue row col (Just val) board
 
-minDifficulty :: Int
-minDifficulty = 45
+type Difficulty = Int
 
-generateGame :: Eff (random :: RANDOM) (Tuple Int Board)
-generateGame = fullBoard >>= go 0
+generateGame :: Difficulty -> Eff (random :: RANDOM) (Tuple Int Board)
+generateGame minDifficulty = fullBoard >>= go 0
   where
   go :: Int -> Board -> Eff (random :: RANDOM) (Tuple Int Board)
   go difficulty old = do
@@ -124,4 +123,4 @@ generateGame = fullBoard >>= go 0
       1 -> go (difficulty + 1) new -- try more
       _ -> if difficulty > minDifficulty
            then pure $ Tuple difficulty old -- return the game
-           else generateGame -- try from scratch! :sad:
+           else generateGame minDifficulty -- try from scratch! :sad:
