@@ -54,7 +54,7 @@ sectionAt secRow secCol (Board arr) = filter f arr
 valueAt :: Row -> Col -> Board -> Maybe Int
 valueAt row col (Board arr) = arr !! (row * 9 + col) >>= value
 
-choose :: Array Int -> Eff (random :: RANDOM) Int
+choose :: forall e. Array Int -> Eff (random :: RANDOM | e) Int
 choose [x] = pure x
 choose xs = do
   idx <- randomInt 0 (length xs - 1)
@@ -73,7 +73,7 @@ replaceValue row col val (Board arr) =
   Board $ unsafePartial fromJust $ updateAt idx (Cell idx val) arr
   where idx = row * 9 + col
 
-emptyRandomCell :: Board -> Eff (random :: RANDOM) Board
+emptyRandomCell :: forall e. Board -> Eff (random :: RANDOM | e) Board
 emptyRandomCell board = do
   row <- randomInt 0 8
   col <- randomInt 0 8
@@ -81,10 +81,10 @@ emptyRandomCell board = do
     Nothing -> emptyRandomCell board -- try again, not smart but works
     Just _ -> pure $ replaceValue row col Nothing board
 
-fullBoard :: Eff (random :: RANDOM) Board
+fullBoard :: forall e. Eff (random :: RANDOM | e) Board
 fullBoard = unsafePartial fromJust <$> go 0 0 [] emptyBoard
   where
-    go :: Row -> Col -> Array Int -> Board -> Eff (random :: RANDOM) (Maybe Board)
+    go :: forall e. Row -> Col -> Array Int -> Board -> Eff (random :: RANDOM | e) (Maybe Board)
     go row 9 _ board = go (row + 1) 0 [] board
     go 9 _ _ board = pure $ Just board
     go row col alreadyTried board =
@@ -112,10 +112,10 @@ solve board = go 0 0 board
 
 type Difficulty = Int
 
-generateGame :: Difficulty -> Eff (random :: RANDOM) (Tuple Difficulty Board)
+generateGame :: forall e. Difficulty -> Eff (random :: RANDOM | e) (Tuple Difficulty Board)
 generateGame minDify = fullBoard >>= go 0
   where
-  go :: Difficulty -> Board -> Eff (random :: RANDOM) (Tuple Difficulty Board)
+  go :: forall e. Difficulty -> Board -> Eff (random :: RANDOM | e) (Tuple Difficulty Board)
   go dify old = do
     new <- emptyRandomCell old
     case length $ solve new of
