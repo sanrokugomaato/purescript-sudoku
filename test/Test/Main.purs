@@ -2,7 +2,9 @@ module Test.Main where
 
 import Prelude
 
+import Test.Unit.Main (runTest)
+
 import Test.Sudoku.UtilSpec as Util
 
-main = do
+main = runTest do
   Util.spec

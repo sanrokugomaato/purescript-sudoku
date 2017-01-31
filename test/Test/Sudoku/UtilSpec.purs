@@ -3,7 +3,6 @@ module Test.Sudoku.UtilSpec where
 import Prelude
 
 import Test.Unit (suite, test)
-import Test.Unit.Main (runTest)
 import Test.Unit.QuickCheck (quickCheck)
 import Test.QuickCheck (Result(..), (===), (<?>))
 
@@ -14,7 +13,7 @@ import Data.Array (length)
 import Data.Foldable (elem)
 import Data.Maybe (Maybe(..))
 
-spec = runTest do
+spec = suite "Test.Sudoku.UtilSpec" do
   suite "fromJust'" do
     test "retrieve value from Just" do
       quickCheck \ x ->
