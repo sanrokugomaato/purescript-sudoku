@@ -10,7 +10,7 @@ import Partial.Unsafe (unsafePartial)
 fromJust' :: forall a. Maybe a -> a
 fromJust' = unsafePartial fromJust
 
-choose :: forall e. Array Int -> Eff (random :: RANDOM | e) Int
+choose :: forall e. Array ~> Eff (random :: RANDOM | e)
 choose [x] = pure x
 choose xs = do
   idx <- randomInt 0 (length xs - 1)
