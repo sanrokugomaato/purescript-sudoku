@@ -14,12 +14,16 @@ main = do
   let minDify = 45
   log $ "Minimum difficulty level: " <> show minDify <> "\n"
 
+  -- generate a Sudoku game with at least 45 holes in the question board
   game@(Game dify board answer) <- generateGame minDify
   logShow game
 
+  -- try solving
   log "Solution:"
   let solution = fromJust' $ solve board !! 0 -- unique, so get the first answer
   logShow solution
+
+  -- check if the solution is valid
   log $ "Result: " <>
     if solution == answer
     then "ok!"

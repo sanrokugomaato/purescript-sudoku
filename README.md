@@ -1,23 +1,21 @@
 # purescript-sudoku
 
+[![Pursuit](https://pursuit.purescript.org/packages/purescript-sudoku/badge)](http://pursuit.purescript.org/packages/purescript-sudoku)
 [![Travis CI](https://travis-ci.org/sanrokugomaato/purescript-sudoku.svg?branch=master)](https://travis-ci.org/sanrokugomaato/purescript-sudoku)
 
 [Sudoku](https://en.wikipedia.org/wiki/Sudoku) library written in PureScript
 
-## Project status
+## Installation
 
-In development, not ready for usage.
+```
+bower install purescript-sudoku
+```
 
-## Todo
+## Documentation
 
-*Help welcomed!*
+Module documentation is [published on Pursuit](http://pursuit.purescript.org/packages/purescript-sudoku).
 
-- [x] Basic implementation
-- [ ] Doc
-- [ ] Pursuit release
-- [ ] Test
-
-## Try
+## Example
 
 Try running an example provided with the repo:
 
