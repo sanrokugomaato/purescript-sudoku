@@ -1,17 +1,14 @@
 module Test.Sudoku.UtilSpec where
 
 import Prelude
-
-import Test.Unit (suite, test)
-import Test.Unit.QuickCheck (quickCheck)
-import Test.QuickCheck (Result(..), (===), (<?>))
-
 import Sudoku.Util
-
 import Control.Monad.Eff.Unsafe (unsafePerformEff)
 import Data.Array (length)
 import Data.Foldable (elem)
 import Data.Maybe (Maybe(..))
+import Test.QuickCheck (Result(..), (===), (<?>))
+import Test.Unit (suite, test)
+import Test.Unit.QuickCheck (quickCheck)
 
 spec = suite "Test.Sudoku.UtilSpec" do
   suite "fromJust'" do
