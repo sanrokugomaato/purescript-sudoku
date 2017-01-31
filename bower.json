@@ -1,5 +1,9 @@
 {
   "name": "purescript-sudoku",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/sanrokugomaato/purescript-sudoku.git"
+  },
   "ignore": [
     "**/.*",
     "node_modules",
